@@ -36,7 +36,7 @@ describe('RateLimiter', function () {
   describe('Sanity Tests:', function () {
     let limiter, limit10per1
     beforeEach(function () {
-      limit10per1 = new RateLimit({requests: 10, seconds: 1}, {debug: true})
+      limit10per1 = new RateLimit({requests: 10, seconds: 1}, {debug: false})
 
       limiter = new RateLimiter({
         limits: [limit10per1],
@@ -142,8 +142,8 @@ describe('RateLimiter', function () {
   describe('addLimit()', function () {
     let limitToAdd, limiter
     beforeEach(function () {
-      limiter    = new RateLimiter({limits: [new RateLimit({seconds: 1, requests: 10}, {debug: true})]})
-      limitToAdd = new RateLimit({requests: 20, seconds: 5}, {debug: true})
+      limiter    = new RateLimiter({limits: [new RateLimit({seconds: 1, requests: 10}, {debug: false})]})
+      limitToAdd = new RateLimit({requests: 20, seconds: 5}, {debug: false})
       limiter.addOrUpdateLimit(limitToAdd)
     });
     it('adds the limit to the limiters limits', function () {
@@ -165,7 +165,7 @@ describe('RateLimiter', function () {
   describe('removeLimit()', function () {
     let limitToRemove, limiter
     beforeEach(function () {
-      limitToRemove = new RateLimit({requests: 20, seconds: 5}, {debug: true})
+      limitToRemove = new RateLimit({requests: 20, seconds: 5}, {debug: false})
       limiter       = new RateLimiter({limits: [limitToRemove]})
       limiter.removeLimit(limitToRemove)
     });

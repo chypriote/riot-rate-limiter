@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RateLimiter = exports.RATELIMIT_BACKOFF_DURATION_MS_DEFAULT = exports.STRATEGY = void 0;
 const RateLimit_1 = require("../RateLimit");
 const RiotRateLimiterParameterError_1 = require("../errors/RiotRateLimiterParameterError");
 var STRATEGY;
 (function (STRATEGY) {
     STRATEGY[STRATEGY["BURST"] = 0] = "BURST";
     STRATEGY[STRATEGY["SPREAD"] = 1] = "SPREAD";
-})(STRATEGY = exports.STRATEGY || (exports.STRATEGY = {}));
+})(STRATEGY || (exports.STRATEGY = STRATEGY = {}));
 exports.RATELIMIT_BACKOFF_DURATION_MS_DEFAULT = 1000;
 class RateLimiter {
     constructor({ limits, strategy = RateLimiter.STRATEGY.BURST, debug = false }) {
@@ -358,5 +359,5 @@ class RateLimiter {
         }, { debug });
     }
 }
-RateLimiter.STRATEGY = STRATEGY;
 exports.RateLimiter = RateLimiter;
+RateLimiter.STRATEGY = STRATEGY;
