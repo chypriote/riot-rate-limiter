@@ -1,13 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const index_1 = require("../RateLimiter/index");
+exports.RateLimit = exports.FACTOR_REQUEST_MARGIN_ABOVE_5_SEC = exports.FACTOR_REQUEST_MARGIN_BELOW_5_SEC = exports.RATELIMIT_INIT_SECONDS = exports.RATELIMIT_TYPE_STRINGS = exports.RATELIMIT_TYPE = void 0;
+const RateLimiter_1 = require("../RateLimiter");
 var RATELIMIT_TYPE;
 (function (RATELIMIT_TYPE) {
     RATELIMIT_TYPE[RATELIMIT_TYPE["APP"] = 0] = "APP";
     RATELIMIT_TYPE[RATELIMIT_TYPE["METHOD"] = 1] = "METHOD";
     RATELIMIT_TYPE[RATELIMIT_TYPE["SYNC"] = 2] = "SYNC";
     RATELIMIT_TYPE[RATELIMIT_TYPE["BACKOFF"] = 3] = "BACKOFF";
-})(RATELIMIT_TYPE = exports.RATELIMIT_TYPE || (exports.RATELIMIT_TYPE = {}));
+})(RATELIMIT_TYPE || (exports.RATELIMIT_TYPE = RATELIMIT_TYPE = {}));
 exports.RATELIMIT_TYPE_STRINGS = {
     [RATELIMIT_TYPE.METHOD]: 'method',
     [RATELIMIT_TYPE.APP]: 'app',
@@ -18,6 +19,11 @@ exports.RATELIMIT_INIT_SECONDS = 7200;
 exports.FACTOR_REQUEST_MARGIN_BELOW_5_SEC = 0.75;
 exports.FACTOR_REQUEST_MARGIN_ABOVE_5_SEC = 0.9;
 class RateLimit {
+    get requests() { return this._requests; }
+    get seconds() { return this._seconds; }
+    get type() { return this._type; }
+    get count() { return this._count; }
+    get debug() { return this._debug; }
     constructor({ requests, seconds, type = RATELIMIT_TYPE.APP, count = 0 }, { debug = false } = {}) {
         this.timestampLastReset = Date.now();
         this._requests = requests;
@@ -30,11 +36,6 @@ class RateLimit {
         this.requestsSafeBurst = (this.seconds <= 5) ? Math.floor(this.requests * exports.FACTOR_REQUEST_MARGIN_BELOW_5_SEC) : Math.floor(this.requests * exports.FACTOR_REQUEST_MARGIN_ABOVE_5_SEC);
         this.limiters = [];
     }
-    get requests() { return this._requests; }
-    get seconds() { return this._seconds; }
-    get type() { return this._type; }
-    get count() { return this._count; }
-    get debug() { return this._debug; }
     static getRateLimitTypeString(type) {
         return exports.RATELIMIT_TYPE_STRINGS[type];
     }
@@ -86,7 +87,7 @@ class RateLimit {
         return remaining > 0 ? remaining : 0;
     }
     isUsingSafetyMargin(strategy) {
-        return strategy === index_1.STRATEGY.BURST && this.type !== RATELIMIT_TYPE.SYNC && this.type !== RATELIMIT_TYPE.BACKOFF;
+        return strategy === RateLimiter_1.STRATEGY.BURST && this.type !== RATELIMIT_TYPE.SYNC && this.type !== RATELIMIT_TYPE.BACKOFF;
     }
     getSpreadInterval() {
         const remainingExecutionsInIntervall = this._requests - this._count;
@@ -110,7 +111,7 @@ class RateLimit {
         else {
             this._count = 0;
             this.timestampLastReset = Date.now();
-            if (!this.check(index_1.STRATEGY.BURST)) {
+            if (!this.check(RateLimiter_1.STRATEGY.BURST)) {
                 if (this.debug) {
                     console.log('resetting exceeded limit', this.toString());
                 }
@@ -125,9 +126,9 @@ class RateLimit {
         return `${exports.RATELIMIT_TYPE_STRINGS[this._type]} RateLimit: ${this._count}/${this._requests}:${this._seconds} | resetting in ${this.getSecondsUntilReset()}`;
     }
     update({ requests = this._requests, seconds = this._seconds, type = this._type, count = this._count }) {
-        const wasExceededBeforeUpdate = !this.check(index_1.STRATEGY.BURST);
+        const wasExceededBeforeUpdate = !this.check(RateLimiter_1.STRATEGY.BURST);
         this.updateValues({ requests, seconds, type, count });
-        const isExceededAfterUpdate = !this.check(index_1.STRATEGY.BURST);
+        const isExceededAfterUpdate = !this.check(RateLimiter_1.STRATEGY.BURST);
         if (isExceededAfterUpdate || (!isExceededAfterUpdate && wasExceededBeforeUpdate)) {
             this.restartTimeout();
         }
@@ -150,7 +151,7 @@ class RateLimit {
     }
     startResetTimer() {
         if (!this.resetTimeout) {
-            if (this.debug && !this.check(index_1.STRATEGY.BURST)) {
+            if (this.debug && !this.check(RateLimiter_1.STRATEGY.BURST)) {
                 console.log('starting resetTimeout for exceeded limit' + this._seconds * 1000, this.toString());
             }
             this.resetTimeout = setTimeout(() => { this.reset(); }, this._seconds * 1000);

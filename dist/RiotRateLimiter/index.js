@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RiotRateLimiter = void 0;
 const RateLimiter_1 = require("../RateLimiter");
-const requestP = require('request-promise');
-const Bluebird = require('bluebird');
 const RiotRateLimiterParameterError_1 = require("../errors/RiotRateLimiterParameterError");
 const index_1 = require("../RateLimit/index");
+const node_fetch_1 = require("node-fetch");
+const Bluebird = require('bluebird');
 class RiotRateLimiter {
     constructor({ strategy = RateLimiter_1.STRATEGY.SPREAD, debug = false } = {}) {
         this.strategy = strategy;
@@ -46,74 +47,70 @@ class RiotRateLimiter {
             if (!token) {
                 throw new RiotRateLimiterParameterError_1.RiotRateLimiterParameterError('options.token has to be provided for the ApiRequest');
             }
-            let options = {
-                url: url,
+            return (0, node_fetch_1.default)(url, {
                 method: 'GET',
                 headers: { 'X-Riot-Token': token },
-                resolveWithFullResponse,
-                transform: (body, response, resolveWithFullResponse) => {
-                    let updatedLimits = [];
-                    if (this.debug) {
-                        console.log(response.statusCode);
-                        console.log(response.headers);
-                    }
-                    if (response.statusCode < 200 || response.statusCode >= 300) {
-                        resolveWithFullResponse = true;
-                    }
-                    if (response.headers['x-app-rate-limit']) {
-                        const appRateLimits = RiotRateLimiter.extractRateLimitFromHeader(index_1.RATELIMIT_TYPE.APP, response.headers['x-app-rate-limit']);
-                        if (response.headers['x-app-rate-limit-count']) {
-                            RiotRateLimiter.addRequestsCountFromHeader(index_1.RATELIMIT_TYPE.APP, appRateLimits, response.headers['x-app-rate-limit-count']);
-                        }
-                        this.updateAppRateLimits(appRateLimits);
-                        if (this.appLimits) {
-                            this.appLimits.forEach(limit => {
-                                rateLimiter.addOrUpdateLimit(limit);
-                            });
-                            updatedLimits = updatedLimits.concat(appRateLimits);
-                        }
-                    }
-                    if (response.headers['x-method-rate-limit']) {
-                        const methodRateLimits = RiotRateLimiter.extractRateLimitFromHeader(index_1.RATELIMIT_TYPE.METHOD, response.headers['x-method-rate-limit']);
-                        if (response.headers['x-method-rate-limit-count']) {
-                            RiotRateLimiter.addRequestsCountFromHeader(index_1.RATELIMIT_TYPE.METHOD, methodRateLimits, response.headers['x-method-rate-limit-count']);
-                        }
-                        updatedLimits = updatedLimits.concat(methodRateLimits);
-                    }
-                    if (updatedLimits.length > 0) {
-                        if (this.debug) {
-                            console.log('limitOptions from headers:');
-                            console.log(JSON.stringify(updatedLimits, null, 2));
-                        }
-                        rateLimiter.updateLimits(updatedLimits);
-                    }
-                    else if (rateLimiter.isInitializing()) {
-                        rateLimiter.addOrUpdateLimit(RateLimiter_1.RateLimiter.createSyncRateLimit(this.debug));
-                    }
-                    if (response.statusCode === 429) {
-                        let retryAfterMS;
-                        if (response.headers['retry-after']) {
-                            if (this.debug) {
-                                console.warn('Rate limit exceeded on X-Rate-Limit-Type: ' + response.headers['x-rate-limit-type']);
-                                console.warn('Backing off and continue requests after: ' + response.headers['retry-after']);
-                                console.warn('Request url: ' + url);
-                            }
-                            retryAfterMS = parseInt(response.headers['retry-after']) * 1000;
-                        }
-                        else {
-                            if (this.debug) {
-                                console.warn('Rate limit exceeded on underlying system for ' + url);
-                            }
-                        }
-                        rateLimiter.backoff({ retryAfterMS });
-                        return response;
-                    }
-                    rateLimiter.resetBackoff();
-                    return resolveWithFullResponse ? response : body;
+            }).then(response => {
+                let updatedLimits = [];
+                if (this.debug) {
+                    console.log(response.status);
+                    console.log(response.headers);
                 }
-            };
-            return requestP(options)
-                .catch(err => {
+                if (response.status < 200 || response.status >= 300) {
+                    resolveWithFullResponse = true;
+                }
+                if (response.headers['x-app-rate-limit']) {
+                    const appRateLimits = RiotRateLimiter.extractRateLimitFromHeader(index_1.RATELIMIT_TYPE.APP, response.headers['x-app-rate-limit']);
+                    if (response.headers['x-app-rate-limit-count']) {
+                        RiotRateLimiter.addRequestsCountFromHeader(index_1.RATELIMIT_TYPE.APP, appRateLimits, response.headers['x-app-rate-limit-count']);
+                    }
+                    this.updateAppRateLimits(appRateLimits);
+                    if (this.appLimits) {
+                        this.appLimits.forEach(limit => {
+                            rateLimiter.addOrUpdateLimit(limit);
+                        });
+                        updatedLimits = updatedLimits.concat(appRateLimits);
+                    }
+                }
+                if (response.headers['x-method-rate-limit']) {
+                    const methodRateLimits = RiotRateLimiter.extractRateLimitFromHeader(index_1.RATELIMIT_TYPE.METHOD, response.headers['x-method-rate-limit']);
+                    if (response.headers['x-method-rate-limit-count']) {
+                        RiotRateLimiter.addRequestsCountFromHeader(index_1.RATELIMIT_TYPE.METHOD, methodRateLimits, response.headers['x-method-rate-limit-count']);
+                    }
+                    updatedLimits = updatedLimits.concat(methodRateLimits);
+                }
+                if (updatedLimits.length > 0) {
+                    if (this.debug) {
+                        console.log('limitOptions from headers:');
+                        console.log(JSON.stringify(updatedLimits, null, 2));
+                    }
+                    rateLimiter.updateLimits(updatedLimits);
+                }
+                else if (rateLimiter.isInitializing()) {
+                    rateLimiter.addOrUpdateLimit(RateLimiter_1.RateLimiter.createSyncRateLimit(this.debug));
+                }
+                if (response.status === 429) {
+                    let retryAfterMS;
+                    if (response.headers['retry-after']) {
+                        if (this.debug) {
+                            console.warn('Rate limit exceeded on X-Rate-Limit-Type: ' + response.headers['x-rate-limit-type']);
+                            console.warn('Backing off and continue requests after: ' + response.headers['retry-after']);
+                            console.warn('Request url: ' + url);
+                        }
+                        retryAfterMS = parseInt(response.headers['retry-after']) * 1000;
+                    }
+                    else {
+                        if (this.debug) {
+                            console.warn('Rate limit exceeded on underlying system for ' + url);
+                        }
+                    }
+                    rateLimiter.backoff({ retryAfterMS });
+                    return response;
+                }
+                rateLimiter.resetBackoff();
+                return resolveWithFullResponse ? response : response.body;
+            })
+                .catch((err) => {
                 if (err.statusCode !== 429) {
                     throw err;
                 }

@@ -1,4 +1,4 @@
-import { RateLimiter, STRATEGY } from '../RateLimiter/index';
+import { RateLimiter, STRATEGY } from '../RateLimiter';
 export interface RateLimitOptions {
     requests: number;
     seconds: number;
@@ -17,10 +17,13 @@ export declare enum RATELIMIT_TYPE {
     APP = 0,
     METHOD = 1,
     SYNC = 2,
-    BACKOFF = 3,
+    BACKOFF = 3
 }
 export declare const RATELIMIT_TYPE_STRINGS: {
-    [x: number]: string;
+    1: string;
+    0: string;
+    2: string;
+    3: string;
 };
 export declare const RATELIMIT_INIT_SECONDS: number;
 export declare const FACTOR_REQUEST_MARGIN_BELOW_5_SEC: number;
@@ -32,19 +35,19 @@ export interface Comparable {
 export declare class RateLimit implements Comparable, RateLimitOptions {
     private _requests;
     private requestsSafeBurst;
-    readonly requests: number;
+    get requests(): number;
     private _seconds;
-    readonly seconds: number;
+    get seconds(): number;
     private _type;
-    readonly type: RATELIMIT_TYPE;
+    get type(): RATELIMIT_TYPE;
     private _count;
-    readonly count: number;
+    get count(): number;
     private _debug;
-    readonly debug: boolean;
+    get debug(): boolean;
     private resetTimeout;
     private timestampLastReset;
     private limiters;
-    constructor({requests, seconds, type, count}: RateLimitOptions, {debug}?: {
+    constructor({ requests, seconds, type, count }: RateLimitOptions, { debug }?: {
         debug?: boolean;
     });
     static getRateLimitTypeString(type: RATELIMIT_TYPE): string;
@@ -53,7 +56,7 @@ export declare class RateLimit implements Comparable, RateLimitOptions {
     dispose(): void;
     static calcMSUntilReset(limitIntervalSeconds: number, timestampLastLimitReset?: number): number;
     check(strategy: STRATEGY): boolean;
-    private getSecondsUntilReset();
+    private getSecondsUntilReset;
     getMaximumRequests(strategy: STRATEGY): number;
     getRemainingRequests(strategy: STRATEGY): number;
     isUsingSafetyMargin(strategy: STRATEGY): boolean;
@@ -61,11 +64,11 @@ export declare class RateLimit implements Comparable, RateLimitOptions {
     increment(count?: number): void;
     reset(): void;
     toString(): string;
-    update({requests, seconds, type, count}: RateLimitUpdateOptions): void;
+    update({ requests, seconds, type, count }: RateLimitUpdateOptions): void;
     updateSilently(limit: RateLimitOptions): void;
-    private updateValues(limit);
-    private startResetTimer();
-    private notifyLimiters();
+    private updateValues;
+    private startResetTimer;
+    private notifyLimiters;
     static compare(limit1: RateLimitOptions, limit2: RateLimitOptions): number;
     compareTo(comparable: RateLimitOptions): number;
     equals(limit: RateLimitOptions): boolean;

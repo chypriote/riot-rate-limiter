@@ -1,16 +1,16 @@
 import { RateLimit, RateLimitOptions } from '../RateLimit';
-export declare type RateLimiterOptions = {
+export type RateLimiterOptions = {
     limits: RateLimit[];
     strategy?: STRATEGY;
     debug?: boolean;
 };
 export declare enum STRATEGY {
     BURST = 0,
-    SPREAD = 1,
+    SPREAD = 1
 }
 export declare const RATELIMIT_BACKOFF_DURATION_MS_DEFAULT = 1000;
 export declare class RateLimiter {
-    private debug;
+    private readonly debug;
     static STRATEGY: typeof STRATEGY;
     private backoffDurationMS;
     private backoffUntilTimestamp;
@@ -18,9 +18,9 @@ export declare class RateLimiter {
     private intervalNextSpreadExecution;
     private queue;
     private strategy;
-    private limits;
+    private readonly limits;
     private _isPaused;
-    constructor({limits, strategy, debug}: RateLimiterOptions);
+    constructor({ limits, strategy, debug }: RateLimiterOptions);
     addOrUpdateLimit(limit: RateLimit): RateLimit;
     removeLimit(limit: RateLimit): RateLimit;
     updateLimits(limitsOptions: RateLimitOptions[]): void;
@@ -32,7 +32,7 @@ export declare class RateLimiter {
     notifyAboutRemovedLimit(rateLimit: RateLimit): void;
     isStrategyBurst(): boolean;
     isStrategySpread(): boolean;
-    readonly isPaused: boolean;
+    get isPaused(): boolean;
     checkBurstRateLimit(): boolean;
     checkSpreadRateLimit(): boolean;
     getLimits(): RateLimit[];
@@ -41,38 +41,38 @@ export declare class RateLimiter {
     getQueueSize(): number;
     getStrategy(): STRATEGY;
     getStrategyString(): "SPREAD Strategy" | "BURST Strategy" | "UNKNOWN Strategy";
-    private pause();
+    private pause;
     setStrategy(strategy: STRATEGY): void;
-    scheduling(fn: (limiter: RateLimiter) => any, isReschedule?: boolean): Promise<{}>;
-    rescheduling(fn: (limiter: RateLimiter) => any): Promise<{}>;
-    backoff({retryAfterMS}?: {
+    scheduling(fn: (limiter: RateLimiter) => any, isReschedule?: boolean): Promise<unknown>;
+    rescheduling(fn: (limiter: RateLimiter) => any): Promise<unknown>;
+    backoff({ retryAfterMS }?: {
         retryAfterMS?: any;
     }): void;
     resetBackoff(): void;
-    private schedulingWithBurst(fn, isReschedule?);
-    private schedulingWithSpread(fn, isReschedule?);
+    private schedulingWithBurst;
+    private schedulingWithSpread;
     addToQueue(fn: (limiter: RateLimiter) => any, resolve: (value?: (PromiseLike<any> | any)) => void, reject: (reason?: any) => void, isReschedule?: boolean): {
         fn: (limiter: RateLimiter) => any;
         resolve: (value?: any) => void;
         reject: (reason?: any) => void;
     }[];
-    private processSpreadLimitInterval();
-    private refresh();
-    private clearTimeoutAndInterval();
-    private refreshBurstLimiter();
-    private refreshSpreadLimiter();
-    private execute(fn, onSuccess, onError);
+    private processSpreadLimitInterval;
+    private refresh;
+    private clearTimeoutAndInterval;
+    private refreshBurstLimiter;
+    private refreshSpreadLimiter;
+    private execute;
     processBurstQueue(): void;
-    private isBackoffWithoutRetryAfter();
+    private isBackoffWithoutRetryAfter;
     isStrategy(strategy: STRATEGY): boolean;
     getQueue(): {
         fn: (limiter: RateLimiter) => any;
         resolve: (value?: any) => void;
         reject: (reason?: any) => void;
     }[];
-    private unpause();
-    private getSpreadInterval();
+    private unpause;
+    private getSpreadInterval;
     isInitializing(): boolean;
     static createSyncRateLimit(debug?: boolean): RateLimit;
-    private static createBackoffRateLimit(seconds, debug);
+    private static createBackoffRateLimit;
 }

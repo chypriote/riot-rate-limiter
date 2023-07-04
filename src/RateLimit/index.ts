@@ -1,4 +1,4 @@
-import {RateLimiter, STRATEGY} from '../RateLimiter/index';
+import {RateLimiter, STRATEGY} from '../RateLimiter';
 
 export interface RateLimitOptions {
   requests: number,

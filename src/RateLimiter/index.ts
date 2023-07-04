@@ -17,7 +17,7 @@ export enum STRATEGY {
 export const RATELIMIT_BACKOFF_DURATION_MS_DEFAULT = 1000
 
 export class RateLimiter {
-  private debug: boolean;
+  private readonly debug: boolean;
   public static STRATEGY = STRATEGY
 
   /** backoff duration used on 429 from underlying system */
@@ -34,7 +34,7 @@ export class RateLimiter {
   /** all limits set within the limiter.
    * manipulation should only be done by using .addLimit() and .removeLimit
    * to ensure integrity throughout shared limits */
-  private limits: RateLimit[];
+  private readonly limits: RateLimit[];
 
   /**
    * Indicates that the limiter is paused.
@@ -136,7 +136,7 @@ export class RateLimiter {
   }
 
   notifyAboutBackoffFinished(limit: RateLimit) {
-    if (this.debug && this.indexOfLimit(limit) === -1) { // TODO: DRY
+    if (this.debug && this.indexOfLimit(limit) === -1) {
       console.warn(this.toString() + ' got notified from ' + limit.toString() + ' but is not attached to it!')
     }
     this.backoffUntilTimestamp = null
@@ -144,7 +144,7 @@ export class RateLimiter {
   }
 
   notifyAboutLimitUpdate(limit: RateLimit) {
-    if (this.debug && this.indexOfLimit(limit) === -1) { // TODO: DRY
+    if (this.debug && this.indexOfLimit(limit) === -1) {
       console.warn(this.toString() + ' got notified from ' + limit.toString() + ' but is not attached to it!')
     }
     if (this.isStrategySpread()) {
@@ -157,10 +157,9 @@ export class RateLimiter {
   }
 
   notifyAboutLimitReached(limit: RateLimit) {
-    if (this.debug && this.indexOfLimit(limit) === -1) { // TODO: DRY
+    if (this.debug && this.indexOfLimit(limit) === -1) {
       console.warn(this.toString() + ' got notified from ' + limit.toString() + ' but is not attached to it!')
     }
-    // TODO: add callback to notify user about time until next burst
     console.warn('rate limit reached ' + limit.toString())
   }
 
@@ -187,7 +186,7 @@ export class RateLimiter {
   public checkBurstRateLimit(): boolean {
     const exceededLimit = this.limits.find(limit => !limit.check(this.strategy))
     // if (this.debug && exceededLimit) {
-    //   console.log('exceeded ratelimt found: ', exceededLimit.toString())
+    //   console.log('exceeded ratelimit found: ', exceededLimit.toString())
     // }
     return !exceededLimit
   }
@@ -262,7 +261,7 @@ export class RateLimiter {
   }
 
   /**
-   * Schedules a function execution acchording to the rate limits and strategy set.
+   * Schedules a function execution according to the rate limits and strategy set.
    *
    * @param fn the (anonymous) function to be executed. Will be passed the executing RateLimiter when executed
    * @param isReschedule if true, execution will be done asap instead of queueing up and will not increase the
@@ -362,7 +361,7 @@ export class RateLimiter {
   }
 
   /**
-   * Procecces the first item of the queue
+   * Processes the first item of the queue
    * */
   private processSpreadLimitInterval() {
     if (this.queue.length !== 0) {
@@ -400,7 +399,7 @@ export class RateLimiter {
     if (this.queue.length !== 0) {
       // kind of a primitive round-robin in case limiters use the same limit
       // with the same interval every time the limiter that is created first would always get the reset from the limit
-      // rare case propably
+      // rare case probably
       const factorForEqualRights = Math.floor(Math.random() * 100)
       this.intervalProcessQueue  = setInterval(() => {this.processBurstQueue()}, 1000 + factorForEqualRights)
       this.intervalProcessQueue.unref()
@@ -448,7 +447,7 @@ export class RateLimiter {
         queueSplice.forEach(({fn, resolve, reject}) => {
           this.scheduling(fn, true).then(resolve).catch((err) => {
             // if (err.statusCode >= 500){
-            // in case we get an error from the synching call, we need to be able to move on
+            // in case we get an error from the syncing call, we need to be able to move on
             // we do so by backing off with the default value and moving on from there
             // while still rejecting the original function, to delegate the error to the user
             this.backoff()
@@ -498,11 +497,11 @@ export class RateLimiter {
     return !!this.limits.find(limit => limit.type === RATELIMIT_TYPE.SYNC)
   }
 
-  /** Rate Limit with a single request to synch up a methods rate-limiter with the response headers before starting
+  /** Rate Limit with a single request to sync up a methods rate-limiter with the response headers before starting
    *  batch requests.
    *  Only use this as initial RateLimit for a fresh RateLimiter.
    *
-   *  Needs to be replaced with the correct RateLimit objects afterwards.
+   *  Needs to be replaced with the correct RateLimit objects afterward.
    *  This is taken care off by {@link executingScheduledCallback}
    *  */
   public static createSyncRateLimit(debug = false): RateLimit {
