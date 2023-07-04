@@ -7,10 +7,9 @@ should()
 import * as chaiAsPromised from 'chai-as-promised'
 
 use(chaiAsPromised)
+const sinon = require('sinon')
 
-import * as sinon from 'sinon'
-
-import {RateLimit} from '../RateLimit/index';
+import {RateLimit} from '../RateLimit';
 import {RateLimiter, STRATEGY} from './index';
 import {RiotRateLimiterParameterError} from '../errors/RiotRateLimiterParameterError';
 

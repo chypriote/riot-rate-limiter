@@ -10,11 +10,17 @@ var STRATEGY;
 })(STRATEGY || (exports.STRATEGY = STRATEGY = {}));
 exports.RATELIMIT_BACKOFF_DURATION_MS_DEFAULT = 1000;
 class RateLimiter {
+    debug;
+    static STRATEGY = STRATEGY;
+    backoffDurationMS = exports.RATELIMIT_BACKOFF_DURATION_MS_DEFAULT;
+    backoffUntilTimestamp;
+    intervalProcessQueue = null;
+    intervalNextSpreadExecution = null;
+    queue = [];
+    strategy;
+    limits;
+    _isPaused;
     constructor({ limits, strategy = RateLimiter.STRATEGY.BURST, debug = false }) {
-        this.backoffDurationMS = exports.RATELIMIT_BACKOFF_DURATION_MS_DEFAULT;
-        this.intervalProcessQueue = null;
-        this.intervalNextSpreadExecution = null;
-        this.queue = [];
         if (!limits || !Array.isArray(limits) || limits.length === 0) {
             throw new RiotRateLimiterParameterError_1.RiotRateLimiterParameterError('At least one RateLimit has to be provided!');
         }
@@ -360,4 +366,3 @@ class RateLimiter {
     }
 }
 exports.RateLimiter = RateLimiter;
-RateLimiter.STRATEGY = STRATEGY;

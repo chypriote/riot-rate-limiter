@@ -1,5 +1,5 @@
 import { STRATEGY } from '../RateLimiter';
-import { RateLimit, RATELIMIT_TYPE, RateLimitOptions } from '../RateLimit/index';
+import { RateLimit, RATELIMIT_TYPE, RateLimitOptions } from '../RateLimit';
 export type RiotRateLimiterConstructorOptions = {
     strategy?: STRATEGY;
     debug?: boolean;
@@ -11,9 +11,9 @@ export type RiotRateLimiterOptions = {
     apiMethod: string;
 };
 export declare class RiotRateLimiter {
-    private limitersPerPlatformId;
+    private readonly limitersPerPlatformId;
     private strategy;
-    private debug;
+    private readonly debug;
     private appLimits;
     constructor({ strategy, debug }?: RiotRateLimiterConstructorOptions);
     executing({ url, token, resolveWithFullResponse }: {

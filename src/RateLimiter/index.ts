@@ -1,9 +1,11 @@
 import {
   RateLimit,
-  RATELIMIT_INIT_SECONDS, RATELIMIT_TYPE, RATELIMIT_TYPE_STRINGS,
-  RateLimitOptions
-} from '../RateLimit';
-import {RiotRateLimiterParameterError} from '../errors/RiotRateLimiterParameterError';
+  RATELIMIT_INIT_SECONDS,
+  RATELIMIT_TYPE,
+  RATELIMIT_TYPE_STRINGS,
+  RateLimitOptions,
+} from '../RateLimit'
+import { RiotRateLimiterParameterError } from '../errors/RiotRateLimiterParameterError'
 
 export type RateLimiterOptions = {
   limits: RateLimit[], strategy?: STRATEGY, debug?: boolean
@@ -185,9 +187,9 @@ export class RateLimiter {
    */
   public checkBurstRateLimit(): boolean {
     const exceededLimit = this.limits.find(limit => !limit.check(this.strategy))
-    // if (this.debug && exceededLimit) {
-    //   console.log('exceeded ratelimit found: ', exceededLimit.toString())
-    // }
+    if (this.debug && exceededLimit) {
+      console.log('exceeded ratelimit found: ', exceededLimit.toString())
+    }
     return !exceededLimit
   }
 
@@ -321,8 +323,7 @@ export class RateLimiter {
   private schedulingWithBurst(fn: (limiter: RateLimiter) => any, isReschedule = false) {
     return new Promise((resolve, reject) => {
       if (this.debug) {
-        console.log('scheduling request, limit not exceeded: ' + this.checkBurstRateLimit() + ' rescheduled:' +
-          ' ' + isReschedule)
+        console.log(`scheduling request, limit not exceeded: ${this.checkBurstRateLimit()} rescheduled: ${isReschedule}`)
       }
       if (!this.isPaused && this.checkBurstRateLimit()) {
         if (this.debug) console.log('executing function')

@@ -3,10 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RiotRateLimiter = void 0;
 const RateLimiter_1 = require("../RateLimiter");
 const RiotRateLimiterParameterError_1 = require("../errors/RiotRateLimiterParameterError");
-const index_1 = require("../RateLimit/index");
+const RateLimit_1 = require("../RateLimit");
 const node_fetch_1 = require("node-fetch");
-const Bluebird = require('bluebird');
 class RiotRateLimiter {
+    limitersPerPlatformId;
+    strategy;
+    debug;
+    appLimits;
     constructor({ strategy = RateLimiter_1.STRATEGY.SPREAD, debug = false } = {}) {
         this.strategy = strategy;
         this.debug = debug;
@@ -40,7 +43,7 @@ class RiotRateLimiter {
         });
     }
     executingScheduledCallback(rateLimiter, { url, token, resolveWithFullResponse = false }) {
-        return Bluebird.resolve().then(() => {
+        return Promise.resolve().then(() => {
             if (!url) {
                 throw new RiotRateLimiterParameterError_1.RiotRateLimiterParameterError('URL has to be provided for the ApiRequest');
             }
@@ -60,9 +63,9 @@ class RiotRateLimiter {
                     resolveWithFullResponse = true;
                 }
                 if (response.headers['x-app-rate-limit']) {
-                    const appRateLimits = RiotRateLimiter.extractRateLimitFromHeader(index_1.RATELIMIT_TYPE.APP, response.headers['x-app-rate-limit']);
+                    const appRateLimits = RiotRateLimiter.extractRateLimitFromHeader(RateLimit_1.RATELIMIT_TYPE.APP, response.headers['x-app-rate-limit']);
                     if (response.headers['x-app-rate-limit-count']) {
-                        RiotRateLimiter.addRequestsCountFromHeader(index_1.RATELIMIT_TYPE.APP, appRateLimits, response.headers['x-app-rate-limit-count']);
+                        RiotRateLimiter.addRequestsCountFromHeader(RateLimit_1.RATELIMIT_TYPE.APP, appRateLimits, response.headers['x-app-rate-limit-count']);
                     }
                     this.updateAppRateLimits(appRateLimits);
                     if (this.appLimits) {
@@ -73,9 +76,9 @@ class RiotRateLimiter {
                     }
                 }
                 if (response.headers['x-method-rate-limit']) {
-                    const methodRateLimits = RiotRateLimiter.extractRateLimitFromHeader(index_1.RATELIMIT_TYPE.METHOD, response.headers['x-method-rate-limit']);
+                    const methodRateLimits = RiotRateLimiter.extractRateLimitFromHeader(RateLimit_1.RATELIMIT_TYPE.METHOD, response.headers['x-method-rate-limit']);
                     if (response.headers['x-method-rate-limit-count']) {
-                        RiotRateLimiter.addRequestsCountFromHeader(index_1.RATELIMIT_TYPE.METHOD, methodRateLimits, response.headers['x-method-rate-limit-count']);
+                        RiotRateLimiter.addRequestsCountFromHeader(RateLimit_1.RATELIMIT_TYPE.METHOD, methodRateLimits, response.headers['x-method-rate-limit-count']);
                     }
                     updatedLimits = updatedLimits.concat(methodRateLimits);
                 }
@@ -234,7 +237,7 @@ class RiotRateLimiter {
         }
         let updateOptionsCopy = updateOptions.slice();
         if (!this.appLimits || this.appLimits.length === 0) {
-            this.appLimits = updateOptionsCopy.map(options => new index_1.RateLimit(options, { debug: this.debug }));
+            this.appLimits = updateOptionsCopy.map(options => new RateLimit_1.RateLimit(options, { debug: this.debug }));
         }
         else {
             this.appLimits = this.appLimits.filter(limit => {
@@ -255,7 +258,7 @@ class RiotRateLimiter {
                 }
             });
             if (updateOptionsCopy.length > 0) {
-                this.appLimits = this.appLimits.concat(updateOptionsCopy.map(options => new index_1.RateLimit(options, { debug: this.debug })));
+                this.appLimits = this.appLimits.concat(updateOptionsCopy.map(options => new RateLimit_1.RateLimit(options, { debug: this.debug })));
             }
         }
     }

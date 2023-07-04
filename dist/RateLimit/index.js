@@ -19,13 +19,21 @@ exports.RATELIMIT_INIT_SECONDS = 7200;
 exports.FACTOR_REQUEST_MARGIN_BELOW_5_SEC = 0.75;
 exports.FACTOR_REQUEST_MARGIN_ABOVE_5_SEC = 0.9;
 class RateLimit {
+    _requests;
+    requestsSafeBurst;
     get requests() { return this._requests; }
+    _seconds;
     get seconds() { return this._seconds; }
+    _type;
     get type() { return this._type; }
+    _count;
     get count() { return this._count; }
+    _debug;
     get debug() { return this._debug; }
+    resetTimeout;
+    timestampLastReset = Date.now();
+    limiters;
     constructor({ requests, seconds, type = RATELIMIT_TYPE.APP, count = 0 }, { debug = false } = {}) {
-        this.timestampLastReset = Date.now();
         this._requests = requests;
         this._seconds = seconds;
         this._type = type;
