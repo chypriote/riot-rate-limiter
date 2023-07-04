@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.RiotRateLimiter = void 0;
 const RateLimiter_1 = require("../RateLimiter");
 const requestP = require('request-promise');
-const Bluebird = require('bluebird');
 const RiotRateLimiterParameterError_1 = require("../errors/RiotRateLimiterParameterError");
 const index_1 = require("../RateLimit/index");
 class RiotRateLimiter {
@@ -39,7 +39,7 @@ class RiotRateLimiter {
         });
     }
     executingScheduledCallback(rateLimiter, { url, token, resolveWithFullResponse = false }) {
-        return Bluebird.resolve().then(() => {
+        return Promise.resolve().then(() => {
             if (!url) {
                 throw new RiotRateLimiterParameterError_1.RiotRateLimiterParameterError('URL has to be provided for the ApiRequest');
             }
