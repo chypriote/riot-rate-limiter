@@ -1,7 +1,6 @@
 import {RateLimiter, STRATEGY} from '../RateLimiter'
 
 const requestP = require('request-promise');
-const Bluebird = require('bluebird');
 
 export type RiotRateLimiterConstructorOptions = { strategy?: STRATEGY, debug?: boolean }
 export type RiotRateLimiterOptions = { limits: RateLimitOptions[], strategy: STRATEGY, platformId: string, apiMethod: string }
@@ -74,7 +73,7 @@ export class RiotRateLimiter {
   private executingScheduledCallback(rateLimiter: RateLimiter,
                                      {url, token, resolveWithFullResponse = false}
   ) {
-    return Bluebird.resolve().then(() => {
+    return Promise.resolve().then(() => {
       if (!url) { throw new RiotRateLimiterParameterError('URL has to be provided for the ApiRequest') }
       if (!token) { throw new RiotRateLimiterParameterError('options.token has to be provided for the ApiRequest'); }
 
@@ -140,7 +139,7 @@ export class RiotRateLimiter {
 
             if (response.headers['retry-after']) {
               // App, method or service limit exceeded => backoff
-              // (limits update done anyways for app and method limiters)
+              // (limits update done anyway for app and method limiters)
               // X-Rate-Limit-Type + Retry-After
 
 
@@ -163,7 +162,7 @@ export class RiotRateLimiter {
             return response
           }
 
-          rateLimiter.resetBackoff() // request succesful, make sure backoff is reset
+          rateLimiter.resetBackoff() // request successful, make sure backoff is reset
           return resolveWithFullResponse ? response : body
         }
       };

@@ -1,7 +1,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts"/>
 /// <reference path="../../node_modules/@types/chai/index.d.ts"/>
 
-import * as sinon from 'sinon'
+const sinon = require('sinon')
 import {should} from 'chai';
 import {RateLimit, FACTOR_REQUEST_MARGIN_ABOVE_5_SEC, FACTOR_REQUEST_MARGIN_BELOW_5_SEC, RATELIMIT_TYPE} from './index';
 import {STRATEGY} from '../RateLimiter/index';
@@ -29,7 +29,7 @@ describe('RateLimit', function () {
     const requestsSet = 100
     describe('if the ratelimit has a timer of below 5 seconds', function () {
       beforeEach(function () {
-        limit = new RateLimit({requests: requestsSet, seconds: 1}, {debug: true})
+        limit = new RateLimit({requests: requestsSet, seconds: 1}, {debug: false})
       });
       it('reduces the maximum requests acchordingly', function () {
         const expected = requestsSet * FACTOR_REQUEST_MARGIN_BELOW_5_SEC
@@ -39,7 +39,7 @@ describe('RateLimit', function () {
     });
     describe('if the ratelimit has a timer above 5 seconds', function () {
       beforeEach(function () {
-        limit = new RateLimit({requests: requestsSet, seconds: 10}, {debug: true})
+        limit = new RateLimit({requests: requestsSet, seconds: 10}, {debug: false})
       });
       it('reduces the maximum requests acchordingly', function () {
         const expected = requestsSet * FACTOR_REQUEST_MARGIN_ABOVE_5_SEC
@@ -52,7 +52,7 @@ describe('RateLimit', function () {
   describe('100:1', function () {
     let limit: RateLimit
     beforeEach(function () {
-      limit = new RateLimit({requests: 100, seconds: 1}, {debug: true})
+      limit = new RateLimit({requests: 100, seconds: 1}, {debug: false})
     });
 
     it('resets its own timer', function () {
@@ -112,7 +112,7 @@ describe('RateLimit', function () {
   describe('50/10:3600', function () {
     let limit
     beforeEach(function () {
-      limit = new RateLimit({seconds: 3600, requests: 10, count: 50, type: RATELIMIT_TYPE.METHOD, debug: true})
+      limit = new RateLimit({seconds: 3600, requests: 10, count: 50, type: RATELIMIT_TYPE.METHOD, debug: false})
     });
     it('check() returns false', function () {
       limit.check().should.be.false
